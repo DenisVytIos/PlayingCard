@@ -20,8 +20,8 @@ class ViewController: UIViewController {
                 print("\(card)")
             }
         }
-        
     }
+ 
 
    
 
