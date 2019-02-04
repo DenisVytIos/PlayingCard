@@ -8,11 +8,16 @@
 
 import UIKit
 
+@IBDesignable
 class PlayingCardView: UIView {
-
-    var rank: Int      = 5 { didSet{setNeedsDisplay();setNeedsLayout()}}
+    @IBInspectable
+    var rank: Int      = 12 { didSet{setNeedsDisplay();setNeedsLayout()}}
+    @IBInspectable
     var suit: String   = "❤️" { didSet{setNeedsDisplay();setNeedsLayout()}}
+    @IBInspectable
     var isFaceUp: Bool = true { didSet{setNeedsDisplay();setNeedsLayout()}}
+    
+    var faceCardScale: CGFloat = SizeRatio.faceCardImageSizeToBoundsSize{ didSet { setNeedsDisplay()}}
     
     lazy private var upperLeftCornerLabel: UILabel = createCornerLabel()
     lazy private var lowerRightCornerLabel: UILabel = createCornerLabel()
@@ -38,6 +43,15 @@ class PlayingCardView: UIView {
         lowerRightCornerLabel.transform = CGAffineTransform.identity.translatedBy(x: lowerRightCornerLabel.frame.size.width, y: lowerRightCornerLabel.frame.size.height).rotated(by: CGFloat.pi)
         lowerRightCornerLabel.frame.origin = CGPoint(x: bounds.maxX, y: bounds.maxY).offsetBy(dx: -cornerOffset, dy: -cornerOffset).offsetBy(dx: -lowerRightCornerLabel.frame.size.width, dy: -lowerRightCornerLabel.frame.size.height)
     }
+    @objc func adjustFaceCardScale(byHandlingGestureRecognizedBy recognizer: UIPinchGestureRecognizer){
+        switch recognizer.state {
+        case .changed,.ended:
+            faceCardScale *= recognizer.scale
+            recognizer.scale = 1.0
+        default: break
+        }
+        
+    }
     private func configureCornerLabel(_ label:UILabel){
         label.attributedText = cornerString
         label.frame.size = CGSize.zero
@@ -49,10 +63,20 @@ class PlayingCardView: UIView {
         roundedRect.addClip()
         UIColor.white.setFill()
         roundedRect.fill()
-       if let faceCardImage = UIImage(named: rankString+suit){
-            faceCardImage.draw(in: bounds.zoom(by: SizeRatio.faceCardImageSizeToBoundsSize))
-       }else{
-         drawPips()
+        if isFaceUp{
+           if let faceCardImage = UIImage(named: rankString+suit,
+                                             in: Bundle(for: self.classForCoder),
+                                 compatibleWith: traitCollection){
+                faceCardImage.draw(in: bounds.zoom(by: faceCardScale))
+           }else{
+             drawPips()
+            }
+        }else{
+            if let cardBackImage = UIImage(named: "cardback",
+                                              in: Bundle(for: self.classForCoder),
+                                  compatibleWith: traitCollection) {
+                cardBackImage.draw(in: bounds)
+            }
         }
     }
     private func drawPips()
