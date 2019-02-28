@@ -60,5 +60,13 @@ struct PlayingCard: CustomStringConvertible  {
         return allRanks
     }
 
+ }
+  
 }
-}
+
+
+
+
+
+
+
